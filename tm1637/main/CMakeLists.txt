@@ -1,2 +1,2 @@
-idf_component_register(SRCS "main.c"
+idf_component_register(SRCS "tm1637.cpp" "main.cpp"
                        INCLUDE_DIRS ".")
