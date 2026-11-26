@@ -1,5 +1,13 @@
 #include "driver/gpio.h"
 
+// ERROR CODES
+typedef enum {
+    E_onewire_reset     = 1,
+    E_onewire_skip_rom  = 2,
+    E_onewire_write     = 3,
+    E_onewire_read_crc  = 4,
+} DS18B20_error;
+
 class DS18B20 {
     private:
         gpio_num_t linePin;
@@ -13,9 +21,4 @@ class DS18B20 {
         float readTempereture();
 };
 
-// ERROR CODES
-#define E_onewire_reset            1
-#define E_onewire_skip_rom         2
-#define E_onewire_write            3
-#define E_onewire_read_crc         4
 

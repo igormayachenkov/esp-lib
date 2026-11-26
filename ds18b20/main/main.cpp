@@ -6,17 +6,15 @@
 #include "ds18b20.h"
 
 static const char *TAG = "main";
+
+// LED BLINKER
 static uint8_t ledState = 0;
 static gpio_num_t BLINK_GPIO = GPIO_NUM_17;
 
-
-
-
 extern "C" void app_main(void)
 {
-    int pt = portTICK_PERIOD_MS;
     ESP_LOGI(TAG, "***** APP STARTED *****" );
-    ESP_LOGI(TAG, "portTICK_PERIOD_MS: %u", pt);
+    ESP_LOGI(TAG, "portTICK_PERIOD_MS: %u", portTICK_PERIOD_MS);
 
     // CONFIG BLINK GPIO
     gpio_reset_pin(BLINK_GPIO);
@@ -31,7 +29,7 @@ extern "C" void app_main(void)
         try{
             float temp = sensor.readTempereture();
             ESP_LOGI(TAG, "Sensor [%d] temp: %.2f", sensor.getLineGPIO(), temp);
-        }catch(int e){
+        }catch(DS18B20_error e){
             ESP_LOGE(TAG,"error code: %d",e);
         }
 
