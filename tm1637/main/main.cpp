@@ -42,23 +42,35 @@ extern "C" void app_main(void){
 
     /* Configure the peripheral according to the LED type */
     configure_led();
-    //tm1637_init();
-    display.init();
+
+    try{
+        display.init();
+    }catch(TM1637_error e){
+        ESP_LOGE(TAG,"display.init() error code: %d",e);
+    }
 
     char str[16];
 
     for (int i = 0; ;i++) {
+
+        // LED BLINKER
         ESP_LOGI(TAG, "%d) Turning the LED %s!", i, s_led_state == true ? "ON" : "OFF");
         blink_led();
-        /* Toggle the LED state */
+        // Toggle the LED state
         s_led_state = !s_led_state;
 
-        display.set_brightness(i);
 
-        sprintf(str,"%3d*",i);
-        display.write_string(str, i%2);
+        // DISPLAY
+        try{
+            display.set_brightness(i);
 
+            sprintf(str,"%3d*",i);
+            display.write_string(str, i%2);
+        }catch(TM1637_error e){
+            ESP_LOGE(TAG,"error code: %d",e);
+        }
+
+        // DELAY
         vTaskDelay(CONFIG_BLINK_PERIOD / portTICK_PERIOD_MS);
-
     }
 }

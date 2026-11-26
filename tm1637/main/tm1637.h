@@ -1,5 +1,11 @@
 #include "driver/gpio.h"
 
+typedef enum{
+    E_GPIO_CLK  = 1,
+    E_GPIO_DIO  = 2,
+    E_WRONG_ACK = 3,
+} TM1637_error;
+
 class TM1637{
     private:
         gpio_num_t clkPin;

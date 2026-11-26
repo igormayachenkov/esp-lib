@@ -19,18 +19,50 @@ TM1637::TM1637(gpio_num_t clkGPIO, gpio_num_t dioGPIO){
     dioPin = dioGPIO;
 }
 
-void TM1637::set_clk(uint8_t level){ gpio_set_level(clkPin, level); }
-void TM1637::set_dio(uint8_t level){ gpio_set_level(dioPin, level); }
+void TM1637::set_clk(uint8_t level){ 
+    esp_err_t e = gpio_set_level(clkPin, level);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_set_level(CLK) error %X", e);
+        throw(E_GPIO_CLK);
+    }
+}
+void TM1637::set_dio(uint8_t level){ 
+    esp_err_t e = gpio_set_level(dioPin, level);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_set_level(DIO) error %X", e);
+        throw(E_GPIO_DIO);
+    }
+}
+
 
 
 void TM1637::init(){
     ESP_LOGI(TAG, "TM1637 configuration: CLK=%d   DIO=%d", clkPin, dioPin);
 
-    gpio_reset_pin(clkPin);
-    gpio_reset_pin(dioPin);
+    esp_err_t e = 0;
+
+    e = gpio_reset_pin(clkPin);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_reset_pin(CLK) error %X", e);
+        throw(E_GPIO_CLK);
+    }
+    e = gpio_reset_pin(dioPin);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_reset_pin(DIO) error %X", e);
+        throw(E_GPIO_DIO);
+    }
+
     /* Set the GPIO as a push/pull output */
-    gpio_set_direction(clkPin,   GPIO_MODE_OUTPUT);
-    gpio_set_direction(dioPin,   GPIO_MODE_OUTPUT);
+    e = gpio_set_direction(clkPin,   GPIO_MODE_OUTPUT);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_set_direction(CLK) error %X", e);
+        throw(E_GPIO_CLK);
+    }
+    e = gpio_set_direction(dioPin,   GPIO_MODE_OUTPUT);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_set_direction(DIO) error %X", e);
+        throw(E_GPIO_DIO);
+    }
 
     set_dio(1);
     set_clk(1);
@@ -54,16 +86,24 @@ void TM1637::stop(void){
 }
 
 int TM1637::read_ack(){
-    gpio_set_direction(dioPin,   GPIO_MODE_INPUT);
+    esp_err_t e = 0;
+    e = gpio_set_direction(dioPin,   GPIO_MODE_INPUT);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_set_direction(DIO) error %X", e);
+        throw(E_GPIO_DIO);
+    }
     set_clk(0);
     delay();
     int level = gpio_get_level(dioPin);
     set_clk(1);
-    gpio_set_direction(dioPin,   GPIO_MODE_OUTPUT);
+    e = gpio_set_direction(dioPin,   GPIO_MODE_OUTPUT);
+    if(e!=ESP_OK){
+        ESP_LOGE(TAG, "gpio_set_direction(DIO) error %X", e);
+        throw(E_GPIO_DIO);
+    }
     delay();
     // Check ACK
-    if(level!=0)
-        ESP_LOGE(TAG, "TM1637: received wrong ACK");
+    if(level!=0) throw(E_WRONG_ACK);
     return level==0;
 }
 
